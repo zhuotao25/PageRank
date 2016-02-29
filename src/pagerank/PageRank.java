@@ -1,12 +1,21 @@
 package pagerank;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class PageRank {
 
@@ -50,11 +59,37 @@ public class PageRank {
 
 	}
 
-	public static void main(String arg[]){
+	@SuppressWarnings({ "rawtypes", "unchecked", "resource" })
+	private static void inlinks(HashMap m) throws IOException{
+		List entriesList = new LinkedList<ArrayList<String>>(m.entrySet());
+		Collections.sort(entriesList, new Comparator(){
+			public int compare(Object a, Object b) {
+				return ((Comparable) ((ArrayList<String>) ((Map.Entry) (b)).getValue()).size())
+						.compareTo(((ArrayList<String>) ((Map.Entry) (a)).getValue()).size());
+			}
+		});
+		Iterator it = entriesList.iterator();
+		int count=1;
+		String fileName = "inlinks.txt";
+		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fileName));
+		while(it.hasNext()) {
+			Map.Entry entry = (Map.Entry) it.next();
+			
+			if(count<=50){ // print the first 50 pages
+				System.out.println(count+" *** "+entry.getKey()+" *** "+((ArrayList<String>) entry.getValue()).size());
+				bufferedWriter.write(entry.getKey()+"\t"+((ArrayList<String>) entry.getValue()).size());
+				bufferedWriter.newLine();
+			}
+			count++;
+		}
+		bufferedWriter.close();
+	}
+
+	public static void main(String arg[]) throws IOException{
 		long lStartTime = new Date().getTime();
-		
-		createGraph();
-		
+
+		inlinks(createGraph());
+
 		long lEndTime = new Date().getTime();
 		long difference = lEndTime - lStartTime;
 		System.out.println("Elapsed seconds: " + difference/1000+"s");
