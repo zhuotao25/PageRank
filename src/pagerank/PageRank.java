@@ -1,5 +1,7 @@
 package pagerank;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -112,12 +114,10 @@ public class PageRank {
 		bufferedWriter.close();
 	}
 
-
-
 	private static double[] rank(HashMap<String, ArrayList<String>> in, HashMap<String, ArrayList<String>> out, HashSet all) throws InterruptedException{
 		//		ArrayList listOfPagesWithInPages = new ArrayList(m.entrySet());
 		//		ArrayList listOfPages=new ArrayList();
-		//		for(Entry<String, ArrayList<String>> entry : m.entrySet()){ 
+		//		for(Entry<String, ArrayList<String>> entry : m.entrySet()){
 		//			listOfPages.add(entry.getKey());
 		//		}
 		ArrayList allPages=new ArrayList(all);
@@ -130,12 +130,7 @@ public class PageRank {
 			a[i]=1/(double)numPages;
 			System.out.println("a[]="+a[i]);
 		}
-		int count=0;
 		while(true){
-//			if(count>2){
-//				break;
-//			}
-//			count++;
 			for(int i=0;i<numPages;i++){
 				b[i]=LAMDA/numPages;
 				System.out.println("b[]="+b[i]);
@@ -150,7 +145,7 @@ public class PageRank {
 						int pageIndex2=allPages.indexOf(page);
 						System.out.println("?="+b[pageIndex]+"+"+(1-LAMDA)+"*"+a[pageIndex2]+"/"+myOutPages.size());
 						b[pageIndex]=b[pageIndex]+(1-LAMDA)*a[pageIndex2]/(double)myOutPages.size();
-						
+
 						System.out.println(myOutPages.get(j)+":"+b[pageIndex]);
 					}
 				}
@@ -179,12 +174,86 @@ public class PageRank {
 					return b;
 				}
 			}
-			
+
 		}
 		//return b;
 	}
 
-	public static void main(String arg[]) throws IOException, InterruptedException{
+    private static double[] rank2(HashMap<String, ArrayList<String>> in, HashMap<String, ArrayList<String>> out, HashSet all) throws InterruptedException{
+        ArrayList allPages=new ArrayList(all);
+        boolean end=false;
+        boolean end2=false;
+        int numPages=all.size();
+        double[] a=new double[numPages];
+        double[] b=new double[numPages];
+        for(int i=0;i<numPages;i++){
+            a[i]=1/(double)numPages;
+            System.out.println("a[]="+a[i]);
+        }
+        while(true){
+            for(int i=0;i<numPages;i++){
+                b[i]=LAMDA/numPages;
+                System.out.println("b[]="+b[i]);
+            }
+            for(int i=0;i<numPages;i++) {
+                String page=(String) allPages.get(i);
+                if(in.containsKey(page)){
+                    ArrayList myin=in.get(page);
+                    for(int j=0;j<myin.size();j++){
+                        int pageIndex=allPages.indexOf(myin.get(j));
+                        int pageIndex2=allPages.indexOf(page);
+                        b[pageIndex2]=b[pageIndex2]+0.85*a[pageIndex]/out.get(myin.get(j)).size();
+                        System.out.println(page+": "+b[pageIndex2]);
+                    }
+                }
+
+            }
+//            for(int i=0;i<numPages;i++){
+//                String page=(String) allPages.get(i);
+//                System.out.println("page: "+page);
+//                if(out.containsKey(page)){
+//                    ArrayList myOutPages=out.get(page);
+//                    for(int j=0;j<myOutPages.size();j++){
+//                        int pageIndex=allPages.indexOf(myOutPages.get(j));
+//                        int pageIndex2=allPages.indexOf(page);
+//                        System.out.println("?="+b[pageIndex]+"+"+(1-LAMDA)+"*"+a[pageIndex2]+"/"+myOutPages.size());
+//                        b[pageIndex]=b[pageIndex]+(1-LAMDA)*a[pageIndex2]/(double)myOutPages.size();
+//
+//                        System.out.println(myOutPages.get(j)+":"+b[pageIndex]);
+//                    }
+//                }
+//                else{// no outgoing
+//                    for(int j=0;j<numPages;j++){
+//                        b[j]=b[j]+(1-LAMDA)*a[i]/numPages;
+//                        System.out.println("no out");
+//                    }
+//                }
+                Thread.sleep(2000);
+                for(int k=0;k<numPages;k++){
+                    System.out.println(a[k]+"-"+b[k]);
+                    if(Math.abs(a[k]-b[k])<(0.001)){
+                        if(end==false&&end==false)
+                            end2=true;
+                        else if(end==false)
+                            end=true;
+                    }
+                    else{
+                        end=false;
+                        end2=false;
+                    }
+                    a[k]=b[k];
+                }
+                if(end){
+                    return b;
+                }
+            }
+
+        }
+        //return b;
+
+
+
+    public static void main(String arg[]) throws IOException, InterruptedException{
 		long lStartTime = new Date().getTime();
 //		HashMap<String, ArrayList<String>> in=new HashMap<String, ArrayList<String>>();
 //		HashMap<String, ArrayList<String>> out=new HashMap<String, ArrayList<String>>();
@@ -209,7 +278,7 @@ public class PageRank {
 		out.put("b", ac);
 		out.put("c", ab);
 		HashSet all=getAllPages(in,out);
-		double[] gg=rank(in,out,all);
+		double[] gg=rank2(in,out,all);
 		for(int s=0;s<all.size();s++){
 			System.out.println(gg[s]);
 		}
